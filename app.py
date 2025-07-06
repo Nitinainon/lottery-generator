@@ -2,9 +2,8 @@ import streamlit as st
 import random
 from datetime import datetime
 
-st.set_page_config(page_title="ระบบสุ่มเลขหวย", layout="centered")
+st.set_page_config(page_title="🎯 ระบบสุ่มเลขหวย", layout="centered")
 
-# ------------------------------
 # รายการหวย
 lottery_list = [
     "นิเคอิเช้า", "จีนเช้า", "หุ้นฮั่งเส็งเช้า", "หุ้นไต้หวัน",
@@ -19,34 +18,44 @@ def generate_numbers():
     numbers_str = [f"{n:02d}" for n in numbers]
     return position, numbers_str
 
-# ------------------------------
-st.title("🎯 ระบบสุ่มเลขหวย (00–99)")
-st.markdown(f"📅 วันที่: **{datetime.now().strftime('%d/%m/%Y')}**")
-st.markdown("---")
-
-# ใช้ session_state เก็บประวัติ
+# เริ่มต้น session_state
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# ------------------------------
-# UI สำหรับการสุ่มแต่ละรายการ
+# -----------------------------
+st.markdown("## 🎯 ระบบสุ่มเลขหวย (00–99)")
+st.markdown(f"📅 วันที่: **{datetime.now().strftime('%d/%m/%Y')}**")
+
+st.divider()
+
+# ปุ่มล้างประวัติ
+col_clear, _ = st.columns([1, 4])
+with col_clear:
+    if st.button("🗑️ ล้างประวัติทั้งหมด", use_container_width=True):
+        st.session_state.history = []
+        st.success("ล้างประวัติเรียบร้อยแล้ว!")
+
+st.divider()
+
+# UI แบบทันสมัย แยกหวย
 for lottery in lottery_list:
     with st.container():
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            st.subheader(f"📌 {lottery}")
-        with col2:
-            if st.button(f"สุ่มเลข - {lottery}"):
-                pos, nums = generate_numbers()
-                result_text = f"🎲 {lottery} | ตำแหน่ง: **{pos}** | เลข: **{', '.join(nums)}**"
-                st.success(result_text)
-                st.session_state.history.insert(0, result_text)  # เก็บในประวัติ
+        with st.expander(f"📌 {lottery}", expanded=False):
+            col1, col2 = st.columns([3, 1])
+            with col2:
+                if st.button(f"สุ่มเลข", key=lottery):
+                    pos, nums = generate_numbers()
+                    result_text = f"🎲 {lottery} | ตำแหน่ง: **{pos}** | เลข: **{', '.join(nums)}**"
+                    st.session_state.history.insert(0, result_text)
+                    st.success(result_text)
 
-st.markdown("---")
-st.subheader("📜 ประวัติการสุ่มทั้งหมด")
+st.divider()
 
+# แสดงประวัติ
+st.markdown("### 📜 ประวัติการสุ่มทั้งหมด")
 if st.session_state.history:
-    for entry in st.session_state.history:
-        st.write(entry)
+    for i, entry in enumerate(st.session_state.history):
+        with st.container():
+            st.markdown(f"{i+1}. {entry}")
 else:
     st.info("ยังไม่มีการสุ่มเลขในรอบนี้")
